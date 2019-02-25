@@ -7,6 +7,7 @@
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{subcaption}
+\usepackage[ruled,linesnumbered,commentsnumbered]{algorithm2e}
 \DeclarePairedDelimiter\abs{\lvert}{\rvert}%
 \DeclarePairedDelimiter\norm{\lVert}{\rVert}%
 % Swap the definition of \abs* and \norm*, so that \abs
@@ -92,7 +93,7 @@ This gives us,
 	\frac{\lVert E(\textbf{b}^{[L]}) - E(\textbf{a}^{[L]}) \rVert}{\lVert \textbf{b}^{[L]} - \textbf{a}^{[L]} \rVert} &= \frac{1}{2m} \lVert \textbf{b}^{[L]} + \textbf{a}^{[L]} - 2\textbf{y} \rVert \nonumber \\
 	& \leq \frac{1}{m} \left( K_a - \lVert y \rVert \right) \label{eq:reg:2}
 \end{align}
-where $K_a$ is the upper bound of $\lVert \textbf{a} \rVert$ and $\lVert \textbf{b} \rVert$. Observe that the choice of norm here is important. Because the least-squares cost function is obtained by assuming that the errors have a mean of zero, we should not take the 1-norm here, because it would equal zero. A reasonable choice, therefore, is the 2-norm.
+where $K_a$ is the upper bound of $\lVert \textbf{a} \rVert$ and $\lVert \textbf{b} \rVert$. A reasonable choice of norm is the 2-norm.
 
 Looking back at \eqref{eq:int:6}, the second term on the right side of the equation is the derivative of the activation with respect to its parameter. Notice that if the activation is sigmoid or softmax, then it is necessarily less than 1; if it is ReLu, it is either 0 or 1. Therefore, to find the maximum, we assume that the network is comprised solely of ReLu activations, and the maximum of this is 1.
 
@@ -122,7 +123,7 @@ It is easy to show, using the second derivative, that this attains a maxima at $
 \begin{equation}
     \frac{\partial^2 E}{\partial \textbf{w}^{[L]2}_{ij}} = \frac{1}{m}g(\textbf{z}^{[L]})(1 - g(\textbf{z}^{[L]})) a^{[L-1]}_j \label{eq:bin:4}
 \end{equation}
-Setting \eqref{eq:bin:4} to 0 yields $a^{[L-1]}_j = 0\ \forall j$, and thus $z^{[L]} = W^{[L]}_{ij}a^{[L-1]}_j = 0$. This implies $g(\textbf{z}^{[L]}) = \frac{1}{2}$. Now whether $\textbf{y}$ is 0 or 1, substituting this back in \eqref{eq:bin:3}, get
+Setting \eqref{eq:bin:4} to 0 yields $a^{[L-1]}_j = 0\ \forall j$, and thus $z^{[L]} = W^{[L]}_{ij}a^{[L-1]}_j = 0$. This implies $g(\textbf{z}^{[L]}) = \frac{1}{2}$. Now whether $\textbf{y}$ is 0 or 1, substituting this back in \eqref{eq:bin:3}, we get
 \begin{equation}
     \max_j \abs{ \frac{\partial E}{\partial z^{[L]}_j} } = \frac{1}{2m} \label{eq:bin:5}
 \end{equation}
@@ -156,6 +157,102 @@ It is easy to show that the limiting case of this is when all softmax values are
 \begin{equation}
     \max\limits_j \abs{ \frac{\partial E}{\partial W^{[L]}_j} } = \frac{k-1}{km}K_z \label{eq:mul:5}
 \end{equation}
+
+\section{A note on regularization} \label{regularization}
+It should be noted that this framework is extensible to the case where the loss function includes a regularization term. 
+
+In particular, if an $L_2$ regularization term, $\frac{\lambda}{2}\left\Vert \textbf{w} \right\Vert_2^2$ is added, it is trivial to show that the Lipschitz constant increases by $\lambda K$, where $K$ is the upper bound for $\left\Vert \textbf{w} \right\Vert$. More generally, if a Tikhonov regularization term, $\left\Vert \boldsymbol\Gamma \textbf{w} \right\Vert_2^2$ term is added, then the increase in the Lipschitz constant can be computed as below.
+
+\[
+    \begin{aligned}
+        L(\textbf{w}_1) - L(\textbf{w}_2) &= (\boldsymbol\Gamma \textbf{w}_1)^T (\boldsymbol\Gamma \textbf{w}_1) - (\boldsymbol\Gamma \textbf{w}_2)^T (\boldsymbol\Gamma \textbf{w}_2) \\
+        &= \textbf{w}_1^T \boldsymbol\Gamma^2 \textbf{w}_1 - \textbf{w}_2^T \boldsymbol\Gamma^2 \textbf{w}_2 \\
+        &= 2\textbf{w}_2^T \boldsymbol\Gamma^2 (\textbf{w}_1 - \textbf{w}_2) + (\textbf{w}_1-\textbf{w}_2)^T \Gamma^2 (\textbf{w}_1-\textbf{w}_2) \\
+        \frac{\left\Vert L(\textbf{w}_1) - L(\textbf{w}_2) \right\Vert}{\left\Vert \textbf{w}_1-\textbf{w}_2 \right\Vert} & \leq 2 \left\Vert \textbf{w}_2 \right\Vert \left\Vert \boldsymbol\Gamma^2 \right\Vert + \left\Vert \textbf{w}_1-\textbf{w}_2 \right\Vert \left\Vert \boldsymbol\Gamma^2 \right\Vert 
+    \end{aligned}
+\]
+
+If $\textbf{w}_1, \textbf{w}_2$ are bounded by $K$, 
+
+\[
+    \boxed{
+        L = 2K \left\Vert \boldsymbol\Gamma^2 \right\Vert
+    }
+\]
+
+This additional term may be added to the Lipschitz constants derived above when gradient descent is performed on a loss function including a Tikhonov regularization term. Clearly, for an $L_2$-regularizer, since $\boldsymbol\Gamma = \frac{\lambda}{2}\textbf{I}$, $L = \lambda K$.
+
+\section{Going Beyond SGD}
+The framework presented thus far easily extends to algorithms that extend SGD, such as RMSprop, momentum, and Adam. In this section, we show algorithms for some major optimization algorithms popularly used. Further, we show experients for Adam, since it combines the other methods.
+
+RMSprop, gradient descent with momentum, and Adam are based on exponentially weighted averages of the gradients. The trick then is to compute the Lipschitz constant as an exponentially weighted average of the norms of the gradients. This makes sense, since it provides a supremum of the ``velocity" or ``accumulator" terms in momentum and RMSprop respectively.
+
+\subsection{Gradient Descent with Momentum}
+SGD with momentum uses an exponentially weighted average of the gradient as a velocity term. The gradient is replaced by the velocity in the weight update rule.
+
+\begin{algorithm}[H]
+    \SetAlgoLined
+    $K \gets 0$; $V_{\nabla L} \gets 0$\;
+    \For{each iteration}{
+        Compute $\nabla_W L$ for all layers\;
+        $V_{\nabla L} \gets \beta V_{\nabla L} + (1-\beta) \nabla_W L$\;
+        \tcp{Compute the exponentially weighted average of LC}
+        $K \gets \beta K + (1-\beta) \max \norm{\nabla_W L}$ \label{algo:mom:lc}\;
+        \tcp{Weight update}
+        $W \gets W - \frac{1}{K}V_{\nabla L}$ \label{algo:mom:update}\;
+    }
+    \caption{Adaptive momentum}
+    \label{algo:mom}
+\end{algorithm}
+
+Algorithm \ref{algo:mom} shows the \textit{adaptive} version of gradient descent with momentum. The only changes are on lines \ref{algo:mom:lc} and \ref{algo:mom:update}. The exponentially weighted average of the Lipschitz constant ensures that the learning rate for that iteration is optimal. The weight update is changed to reflect our new learning rate. We use the symbol $W$ to consistently refer to the weights as well as the biases; while ``parameters" may be a more apt term, we use $W$ to stay consistent with literature.
+
+Notice that only line \ref{algo:mom:lc} is our job; deep learning frameworks will typically take care of the rest; we simply need to compute $K$ and use a learning rate scheduler that uses the inverse of this value.
+
+\subsection{RMSprop}
+RMSprop uses an exponentially weighted average of the square of the gradients. The square is performed element-wise, and thus preserves dimensions. The update rule in RMSprop replaces the gradient with the ratio of the current gradient and the exponentially moving average. A small value $\epsilon$ is added to the denominator for numerical stability.
+
+Algorithm \ref{algo:rms} shows the modified version of RMSprop. We simply maintain an exponentially weighted average of the Lipschitz constant as before; the learning rate is also replaced by the inverse of the update term, with the exponentially weighted average of the square of the gradient replaced with our computed exponentially weighted average.
+
+\begin{algorithm}[H]
+    \SetAlgoLined
+    $K \gets 0$; $S_{\nabla L} \gets 0$\;
+    \For{each iteration}{
+        Compute $\nabla_W L$ on mini-batch\;
+        $S_{\nabla L} \gets \beta S_{\nabla L} + (1-\beta) (\nabla_W L)^2$\;
+        \tcp{Compute the exponentially weighted average of LC}
+        $K \gets \beta K + (1-\beta) \max \norm{(\nabla_W L)^2}$ \label{algo:rms:lc}\;
+        \tcp{Weight update}
+        $W \gets W - \frac{\sqrt{K} + \epsilon}{\max \norm{\nabla_{W} L}}\cdot \frac{\nabla_{W} L}{\sqrt{S_{\nabla L\textit{}}} + \epsilon}$ \label{algo:rms:update}\;
+    }
+    \caption{Adaptive RMSprop}
+    \label{algo:rms}
+\end{algorithm}
+
+\subsection{Adam}
+Adam combines the above two algorithms. We thus need to maintain two exponentially weighted average terms. The algorithm, shown in Algorithm \ref{algo:adam}, is quite straightforward.
+
+\begin{algorithm}[H]
+    \SetAlgoLined
+    $K_1 \gets 0$; $K_2 \gets 0$; $S_{\nabla L} \gets 0$; $V_{\nabla L} = 0$\;
+    \For{each iteration}{
+        Compute $\nabla_W L$ on mini-batch\;
+        $V_{\nabla L} \gets \beta_1 V_{\nabla L} + (1-\beta_1) \nabla_W L$\;
+        $S_{\nabla L} \gets \beta_2 S_{\nabla L} + (1-\beta_2) (\nabla_W L)^2$\;
+        \tcp{Compute the exponentially weighted averages of LC}
+        $K_1 \gets \beta_1 K_1 + (1-\beta_1) \max \norm{\nabla_W L}$ \;
+        $K_2 \gets \beta_2 K_2 + (1-\beta_2) \max \norm{(\nabla_W L)^2}$ \;
+        \tcp{Weight update}
+        $W \gets W - \frac{\sqrt{K_2} + \epsilon}{K_1}\cdot \frac{V_{\nabla L}}{\sqrt{S_{\nabla L\textit{}}} + \epsilon}$ \label{algo:adam:update}\;
+    }
+    \caption{Auto-Adam}
+    \label{algo:adam}
+\end{algorithm}
+
+In our experiments, we use the defaults of $\beta_1 = 0.9, \beta_2 = 0.999$.
+
+\subsection{A note on bias correction}
+While not commonly used, some implementations of the above algorithms perform bias correction as well. This involves computing the exponentially weighted average, and then dividing by $1 - \beta^t$, where $t$ is the epoch number. In this case, the above algorithms may be adjusted by also dividing the Lipschitz constants by the same constant.
 
 \section{Experiments}
 Below we show the results and details of our experiments on some publicly available datasets. While our results are not state of the art, our focus was to empirically show that SGD can be run with higher learning rates than typically understood. All our experiments were run on a Tesla P100 GPU, and the models were optimized using a stochastic gradient descent optimizer with no momentum or weight decay unless specified. On CIFAR, we only use flipping and translation augmentation schemes as in \cite{he2016deep}. In all experiments the raw image values were divided by 255.
@@ -291,7 +388,13 @@ In this paper, we derived a theoretical framework for computing an adaptive lear
 Clearly, our approach works ``out of the box" with various regularization methods including $L_2$, dropout, and batch normalization; thus, it does not interfere with regularization methods, and automatically chooses an optimal learning rate in stochastic gradient descent. This shows that ``large" learning rates may not be harmful as once thought; rather, a large value may be used if carefully computed.
 
 %This paper extends our earlier work [...]
-The work in this paper discusses how to choose a learning rate automatically in stochastic gradient descent. It must be noted that this does not work for other optimization algorithms such as gradient descent with momentum \cite{sutskever2013importance}, RMSProp \cite{tieleman2012lecture}, and Adam\cite{kingma2014adam}, which combines RMSProp and AdaGrad\cite{duchi2011adaptive}. Future work could extend our approach to these algorithms as well.
+
+\section*{Acknowledgments}
+The authors would like to thank the Science and Engineering Research
+Board (SERB)-Department of Science and Technology
+(DST), Government of of India for supporting this research.
+The project reference number is: SERB-EMR/ 2016/005687.
+\vskip 0.2in
 
 \bibliographystyle{plain}
 \bibliography{cite}
