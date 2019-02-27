@@ -7,7 +7,10 @@
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{subcaption}
+\usepackage{tabularx}
 \usepackage[ruled,linesnumbered,commentsnumbered]{algorithm2e}
+
+\newcolumntype{Y}{>{\centering\arraybackslash}X}
 \DeclarePairedDelimiter\abs{\lvert}{\rvert}%
 \DeclarePairedDelimiter\norm{\lVert}{\rVert}%
 % Swap the definition of \abs* and \norm*, so that \abs
@@ -251,11 +254,45 @@ Adam combines the above two algorithms. We thus need to maintain two exponential
 
 In our experiments, we use the defaults of $\beta_1 = 0.9, \beta_2 = 0.999$.
 
+In practice, it is difficult to get a good estimate of $\max \norm{(\nabla_W L)^2}$, though. For this reason, we tried two different estimates:
+\begin{itemize}
+    \item $\norm{(\max \nabla_W L)^2} = \norm{\left( \frac{k-1}{km}\norm{K_z} + \lambda \norm{w} \right)^2}$ -- This set the learning rate high (around 4 on CIFAR-10 with DenseNet), and the model quickly diverged.
+    \item $\left( \max \norm{\nabla_W L} \right)^2 = \frac{(k-1)^2}{k^2 m^2} \max \norm{K_z^2} + \lambda^2 (\max \norm{w})^2 + \frac{2\lambda(k-1)}{km}\norm{K_z} (\max \norm{w})$ -- This turned out to be an overestimation, and while the same model above did not diverge, it oscillated around a local minimum. We fixed this by removing the middle term. This worked quite well empirically.
+\end{itemize}
+
 \subsection{A note on bias correction}
-While not commonly used, some implementations of the above algorithms perform bias correction as well. This involves computing the exponentially weighted average, and then dividing by $1 - \beta^t$, where $t$ is the epoch number. In this case, the above algorithms may be adjusted by also dividing the Lipschitz constants by the same constant.
+Some implementations of the above algorithms perform bias correction as well. This involves computing the exponentially weighted average, and then dividing by $1 - \beta^t$, where $t$ is the epoch number. In this case, the above algorithms may be adjusted by also dividing the Lipschitz constants by the same constant.
 
 \section{Experiments}
-Below we show the results and details of our experiments on some publicly available datasets. While our results are not state of the art, our focus was to empirically show that SGD can be run with higher learning rates than typically understood. All our experiments were run on a Tesla P100 GPU, and the models were optimized using a stochastic gradient descent optimizer with no momentum or weight decay unless specified. On CIFAR, we only use flipping and translation augmentation schemes as in \cite{he2016deep}. In all experiments the raw image values were divided by 255.
+\begin{table}
+    \centering
+    \caption{Summary of all experiments}
+    \begin{tabularx}{\textwidth}{cccYYY}
+        \toprule \\
+        Dataset & Architecture & Algorithm & LR Policy & Weight Decay & Valid. Acc. \\
+        \midrule \\
+        MNIST & Custom & SGD & Adaptive & None & 99.5\% \\
+        MNIST & Custom & Momentum & Adaptive & None & \textbf{99.57\%} \\
+        MNIST & Custom & Adam & Adaptive & None & 99.43\% \\
+        \midrule \\
+        CIFAR-10 & ResNet20 v1 & SGD & Fixed & $10^{-3}$ & 87.02\% \\
+        CIFAR-10 & ResNet20 v1 & SGD & Adaptive & $10^{-3}$ & 89.37\% \\
+        CIFAR-10 & DenseNet & SGD & Adaptive & $10^{-4}$ & \textbf{91.34\%} \\
+        CIFAR-10 & DenseNet & Adam & Adaptive & $10^{-4}$ & 88.23\% \\
+        CIFAR-10 & ResNet20 v1 & Adam & Fixed & $10^{-4}$ & 70.57\% \\
+        \midrule \\
+        CIFAR-100 & ResNet56 v2 & SGD & Adaptive & $10^{-3}$ & 54.29\% \\
+        CIFAR-100 & ResNet164 v2 & SGD & Adaptive & $10^{-4}$ & \textbf{75.99\%} \\
+        CIFAR-100 & DenseNet & SGD & Adaptive & $10^{-4}$ & 66.06\% \\
+        CIFAR-100 & DenseNet & Adam & Adaptive & $10^{-4}$ & 59.08\% \\
+        \bottomrule \\
+    \end{tabularx}
+    \label{tab:exp:summary}
+\end{table}
+
+Below we show the results and details of our experiments on some publicly available datasets. While our results are not state of the art, our focus was to empirically show that optimization algorithms can be run with higher learning rates than typically understood. Most of our experiments were run on a Tesla P100 GPU. On CIFAR, we only use flipping and translation augmentation schemes as in \cite{he2016deep}. In all experiments the raw image values were divided by 255 after removing the means across each channel.
+
+A summary of our experiments is given in Table \ref{tab:exp:summary}. DenseNet refers to a DenseNet\cite{huang2017densely} architecture with $L = 40$ and $k = 12$.
 
 \subsection{MNIST}
 \begin{table}
@@ -307,6 +344,10 @@ Figure \ref{fig:mnist:1} shows the plot of accuracy scores and loss over the tra
 
 Finally, Figure \ref{fig:mnist:2} shows the computed learning rate over epochs. Note that unlike the computed adaptive learning rates for CIFAR-10 (Figure \ref{fig:cifar10:3}) and CIFAR-100 (Figure \ref{fig:cifar100:1}), the learning rate for MNIST starts at a much higher value. While the learning rate here seems much more random, it must be noted that this was run for only 20 epochs, and hence any variation is exaggerated in comparison to the other models, run for 300 epochs.
 
+The results of our Adam optimizer is also shown in Table \ref{tab:exp:summary}. The optimizer achieved its peak validation accuracy after only 8 epochs. 
+
+We also used a custom implementation of SGD with momentum (see Appendix \ref{appendix:A} for details), and computed an adaptive learning rate using our adaptive momentum algorithm. Surprisingly, this outperformed both our adaptive SGD and Auto-Adam algorithms. However, the algorithm consistently chose a large (around 32) learning rate for the first epoch before computing more reasonable learning rates--since this hindered performance, we modified our adaptive momentum algorithm so that on the first epoch, the algorithm sets $K$ to 0.1 and uses this value as the learning rate.
+
 \subsection{CIFAR-10}
 For the CIFAR-10 experiments, we used a ResNet20 v1\cite{he2016deep}. A residual network is a deep neural network that is made of ``residual blocks". A residual block is a special case of a highway networks \cite{srivastava2015highway} that do not contain any gates in their skip connections. ResNet v2 also uses ``bottleneck" blocks. A bottleneck residual unit consist of a 1x1 layer for reducing dimension, a 3x3 layer, and a 1x1 layer for restoring dimension \cite{he2016identity}. More details can be found in the original ResNet papers \cite{he2016deep,he2016identity}.
 
@@ -328,7 +369,7 @@ Figure \ref{fig:cifar10:1} shows the plots of accuracy score and loss over time.
     \label{fig:cifar10:2}
 \end{figure}
 
-Second, we used the same hyperparameters as above, but recomputed $K_z$, $\max \norm{w}$, and the learning rate every epoch. This cost us around 3 extra seconds per epoch on average. Figure \ref{fig:cifar10:2} shows the plots of accuracy scores and loss over epochs for this setting. We obtained a training accuracy of 99.47\%, validation accuracy of 89.37\%, and test accuracy of 89.03\%. Clearly, this method is superior to a fixed learning rate policy. 
+Second, we used the same hyperparameters as above, but recomputed $K_z$, $\max \norm{w}$, and the learning rate every epoch. This cost us around 3 extra seconds per epoch on average. Figure \ref{fig:cifar10:2} shows the plots of accuracy scores and loss over epochs for this setting. We obtained a training accuracy of 99.47\% and validation accuracy of 89.37\%. Clearly, this method is superior to a fixed learning rate policy. 
 
 \begin{figure}
     \centering
@@ -350,10 +391,39 @@ Figure \ref{fig:cifar10:3} shows the learning rate over time. The adaptive schem
 
 Note that while it does follow the conventional wisdom of choosing a higher learning rate initially to explore the weight space faster and then slowing down as it approaches the global minimum, it ends up choosing a significantly larger learning rate than traditionally used. Clearly, there is no need to decay learning rate by a multiplicative factor. Our model with adaptive learning rate outperforms our model with a fixed learning rate in only 65 epochs. Further, the generalization error is lower with the adaptive learning rate scheme using the same weight decay value. This seems to confirm the notion in \cite{smith2017super} that large learning rates have a regularization effect.
 
-\subsection{CIFAR-100}
-For the CIFAR-100 experiments, we used a ResNet164 v2 \cite{he2016identity}. Our experiments on CIFAR-100 only used an adaptive learning rate scheme.
+\begin{figure}
+    \centering
+    \begin{subfigure}[b]{0.4\textwidth}
+        \includegraphics[width=\linewidth]{cifar10-dn-lr-full.png}
+        \caption{Learning rate over epochs}
+        \label{fig:cifar10:4a}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.4\textwidth}
+        \includegraphics[width=\linewidth]{cifar10-dn-adaptive-lr.png}
+        \caption{Learning rate from epoch 2}
+        \label{fig:cifar10:4b}
+    \end{subfigure}
+    \caption{Adaptive learning rate over time on CIFAR-10 using DenseNet}
+    \label{fig:cifar10:4}
+\end{figure}
 
-We largely used the same parameters as before. Data augmentation involved only flipping and translation. We ran our model for 300 epochs, with a batch size of 128. Each epoch took 139 seconds on average on a P100 GPU. As in \cite{he2016identity}, we used a weight decay of $10^{-4}$. We achieved a training accuracy of 99.68\%, validation accuracy of 75.99\%, and test accuracy of 73.26\% with these settings.
+Figure \ref{fig:cifar10:4} shows the learning rate over time on CIFAR-10 using a DenseNet architecture. Evidently, the algorithm automatically adjusts the learning rate as needed. This architecture outperforms all the other configurations on CIFAR-10.
+
+\begin{figure}
+    \centering
+    \includegraphics[scale=0.4]{cifar10-dn-adam.png}
+    \caption{Learning rate over epochs on CIFAR-10 using Adam and DenseNet}
+    \label{fig:cifar10:5}
+\end{figure}
+
+Interestingly, in all our experiments, ResNets consistently performed poorly when run with our auto-Adam algorithm. Despite using fixed and adaptive learning rates, and several weight decay values, we could not optimize ResNets using auto-Adam. DenseNets and our custom architecture on MNIST, however, had no such issues. Our best results with auto-Adam on ResNet20 and CIFAR-10 were when we continued using the learning rate of the first epoch (around 0.05) for all 300 epochs. 
+
+Figure \ref{fig:cifar10:5} shows a possible explanation. Note that over time, our auto-Adam algorithm causes the learning rate to slowly increase. We postulate that this may be the reason for ResNet's poor performance using our auto-Adam algorithm. However, using SGD, we are able to achieve competitive results for all architectures. We leave an investigation into why auto-Adam fails to optimize ResNets as future work.
+
+\subsection{CIFAR-100}
+For the CIFAR-100 experiments, we used a ResNet164 v2 \cite{he2016identity}. Our experiments on CIFAR-100 only used an adaptive learning rate scheme. Because the ResNet56 and DenseNet models could not perform very well, which we suspect is because the models were not complex enough (our chosen DenseNet version was the simplest of the non-compressed models from the paper\cite{huang2017densely}), we only discuss ResNet164 v2 below. 
+
+We largely used the same parameters as before. Data augmentation involved only flipping and translation. We ran our model for 300 epochs, with a batch size of 128. Each epoch took 139 seconds on average on a P100 GPU. As in \cite{he2016identity}, we used a weight decay of $10^{-4}$. We achieved a training accuracy of 99.68\% and validation accuracy of 75.99\% with these settings.
 
 \begin{figure}
     \centering
@@ -398,4 +468,9 @@ The project reference number is: SERB-EMR/ 2016/005687.
 
 \bibliographystyle{plain}
 \bibliography{cite}
+
+\appendix
+\section{Implementation Details} \label{appendix:A}
+All our code was written using the Keras deep learning library. The architecture we used for MNIST was taken from a Kaggle Python notebook by Aditya Soni\footnote{https://www.kaggle.com/adityaecdrid/mnist-with-keras-for-beginners-99457}. For ResNets, we used the code from the Examples section of the Keras documentation\footnote{https://keras.io/examples/cifar10\_resnet/}. The DenseNet implementation we used was from a GitHub repository by Somshubra Majumdar\footnote{https://github.com/titu1994/DenseNet}. Finally, our implementation of SGD with momentum is a modified version of the Adam implementation in Keras\footnote{https://github.com/keras-team/keras/blob/master/keras/optimizers.py\#L436}.
+
 \end{document}
