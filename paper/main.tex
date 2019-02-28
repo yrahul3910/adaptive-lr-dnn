@@ -277,6 +277,8 @@ Some implementations of the above algorithms perform bias correction as well. Th
         \midrule \\
         CIFAR-10 & ResNet20 v1 & SGD & Fixed & $10^{-3}$ & 87.02\% \\
         CIFAR-10 & ResNet20 v1 & SGD & Adaptive & $10^{-3}$ & 89.37\% \\
+        CIFAR-10 & ResNet20 v1 & Momentum & Adaptive & $10^{-2}$ & 84.71\% \\
+        CIFAR-10 & ResNet20 v1 & Momentum & Adaptive & $10^{-3}$ & 89.27\% \\
         CIFAR-10 & DenseNet & SGD & Adaptive & $10^{-4}$ & \textbf{91.34\%} \\
         CIFAR-10 & DenseNet & Adam & Adaptive & $10^{-4}$ & 88.23\% \\
         CIFAR-10 & ResNet20 v1 & Adam & Fixed & $10^{-4}$ & 70.57\% \\
@@ -417,6 +419,8 @@ Figure \ref{fig:cifar10:4} shows the learning rate over time on CIFAR-10 using a
 \end{figure}
 
 Interestingly, in all our experiments, ResNets consistently performed poorly when run with our auto-Adam algorithm. Despite using fixed and adaptive learning rates, and several weight decay values, we could not optimize ResNets using auto-Adam. DenseNets and our custom architecture on MNIST, however, had no such issues. Our best results with auto-Adam on ResNet20 and CIFAR-10 were when we continued using the learning rate of the first epoch (around 0.05) for all 300 epochs. 
+
+ResNets did work well with our adaptive momentum algorithm, though, performing nearly as well as with SGD. As with MNIST, we had to set the initial learning rate to a fixed value with adaptive momentum. We find that a reasonable choice of this is between 0.1 and 1 (both inclusive). We find that for higher values of weight decay, lower values of $x$ perform better, but we do not perform a more thorough investigation in this paper. In Table \ref{tab:exp:summary}, for the first experiment using ResNet20 and momentum, we used $x = 0.1$; for the second, we used $x = 1$.
 
 Figure \ref{fig:cifar10:5} shows a possible explanation. Note that over time, our auto-Adam algorithm causes the learning rate to slowly increase. We postulate that this may be the reason for ResNet's poor performance using our auto-Adam algorithm. However, using SGD, we are able to achieve competitive results for all architectures. We leave an investigation into why auto-Adam fails to optimize ResNets as future work.
 
