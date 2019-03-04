@@ -33,7 +33,11 @@ The directories are organized by dataset, algorithm, and other options, such as 
 │   │   └── ResNet164
 │   └── SGD
 │       ├── DenseNet
+│       │   ├── Adaptive
+│       │   └── Baseline
 │       ├── ResNet162v2
+│       │   ├── Adaptive
+│       │   └── Baseline
 │       └── ResNet56v2
 ├── MNIST
 └── paper
