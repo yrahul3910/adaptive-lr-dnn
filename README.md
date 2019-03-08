@@ -7,9 +7,15 @@ The directories are organized by dataset, algorithm, and other options, such as 
 ├── CIFAR10
 │   ├── Adam
 │   │   ├── adam-resnet-1e3
+│   │   │   ├── Adaptive
+│   │   │   └── Baseline
 │   │   └── densenet-1e4
+│   │       ├── Adaptive
+│   │       └── Baseline
 │   ├── Momentum
 │   │   ├── DenseNet
+│   │   │   ├── Adaptive
+│   │   │   └── Baseline
 │   │   └── ResNet
 │   │       ├── Adaptive
 │   │       │   ├── 1e-2
@@ -30,8 +36,12 @@ The directories are organized by dataset, algorithm, and other options, such as 
 │   │   │   ├── 1e4
 │   │   │   └── 1e5
 │   │   └── ResNet164
+│   │       ├── Adaptive
+│   │       └── Baseline
 │   ├── Momentum
 │   │   ├── DenseNet
+│   │   │   ├── Adaptive
+│   │   │   └── Baseline
 │   │   └── ResNet164
 │   │       ├── Adaptive
 │   │       └── Baseline
