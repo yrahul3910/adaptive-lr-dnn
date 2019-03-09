@@ -86,6 +86,13 @@ The repository uses standard deep learning libraries in Python:
 * `pickle`
 * `tqdm`
 
+## Credits
+This repository uses code from the following sources:
+* [ResNet implementation from Keras docs](https://keras.io/examples/cifar10_resnet/)
+* [DenseNet implementation by titu1994](https://github.com/titu1994/DenseNet)
+* [AdaMo implementation based on Keras Adam implementation](https://github.com/keras-team/keras/blob/master/keras/optimizers.py#L436). Note that this URL is based on commit [a139716](https://github.com/keras-team/keras/commit/a1397169ddf8595736c01fcea084c8e34e1a3884).
+* [MNIST architecture from Kaggle Python notebook by Aditya Soni](https://www.kaggle.com/adityaecdrid/mnist-with-keras-for-beginners-99457)
+
 ## Citation
 If you find this work useful, please cite the paper:
 ```
