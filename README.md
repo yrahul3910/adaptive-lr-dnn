@@ -1,5 +1,13 @@
 # Code for "A novel adaptive learning rate scheduler for deep neural networks"
-All results and code from the paper can be found here. Trained models and program outputs are also uploaded here. The top-level directories in this repository correspond to the dataset the experiments were run on. The `paper` directory contains the compiled PDF.
+This repository contains the code for the paper
+> Yedida, Rahul, and Snehanshu Saha. "A novel adaptive learning rate scheduler for deep neural networks." arXiv preprint arXiv:1902.07399 (2019).
+
+The main function is `lr_schedule`, that computes the adaptive learning rate for a given dataset and neural network. This method can be used with Keras' `LRScheduler` callback, as used in all the code files.
+
+All results and code from the paper can be found here. Trained models and program outputs are also uploaded here. The top-level directories in this repository correspond to the dataset the experiments were run on. The `paper` directory contains the compiled PDF. The code uses the Keras deep learning library.
+
+## Directory Structure
+At the cost of duplicate code, every directory has independently executable code, i.e., to run any experiment, only the files in that directory are required.
 
 The `Unconstrained` or `Nonconstrained` directories under the DenseNet architecture are experiments that we re-did to make the comparison more fair. The only difference is that `nb_filter` is set to -1 in these experiments, as with all the other DenseNet experiments.
 
@@ -67,4 +75,24 @@ The directories are organized by dataset, algorithm, and other options, such as 
 │       └── ResNet56v2
 ├── MNIST
 └── paper
+```
+
+## Setup
+The repository uses standard deep learning libraries in Python:
+* `keras`
+* `sklearn`
+* `numpy`
+* `matplotlib`
+* `pickle`
+* `tqdm`
+
+## Citation
+If you find this work useful, please cite the paper:
+```
+@article{yedida2019novel,
+  title={A novel adaptive learning rate scheduler for deep neural networks},
+  author={Yedida, Rahul and Saha, Snehanshu},
+  journal={arXiv preprint arXiv:1902.07399},
+  year={2019}
+}
 ```

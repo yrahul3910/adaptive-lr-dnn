@@ -286,7 +286,6 @@ checkpoint = ModelCheckpoint(filepath=filepath,
                              save_best_only=True,
                              period=1)
 
-
 """## Fit function"""
 def fit(epochs):
     # Run training, with or without data augmentation.
