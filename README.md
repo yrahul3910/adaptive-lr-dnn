@@ -1,5 +1,7 @@
 # Code for "A novel adaptive learning rate scheduler for deep neural networks"
-All results and code from the paper can be found here. Trained models and program outputs are also uploaded here. The top-level directories in this repository correspond to the dataset the experiments were run on. The `paper` directory contains the paper source and compiled PDF.
+All results and code from the paper can be found here. Trained models and program outputs are also uploaded here. The top-level directories in this repository correspond to the dataset the experiments were run on. The `paper` directory contains the compiled PDF.
+
+The `Unconstrained` or `Nonconstrained` directories under the DenseNet architecture are experiments that we re-did to make the comparison more fair. The only difference is that `nb_filter` is set to -1 in these experiments, as with all the other DenseNet experiments.
 
 The directories are organized by dataset, algorithm, and other options, such as weight decay value, adaptive/baseline, etc. The full directory structure is below (output from `tree -d`)
 ```
@@ -21,6 +23,10 @@ The directories are organized by dataset, algorithm, and other options, such as 
 │   │       │   ├── 1e-2
 │   │       │   └── 1e-3
 │   │       └── Baseline
+│   ├── RMSprop
+│   │   └── ResNet
+│   │       ├── Adaptive
+│   │       └── Baseline
 │   └── SGD
 │       ├── DenseNet
 │       │   ├── Adaptive
@@ -33,8 +39,12 @@ The directories are organized by dataset, algorithm, and other options, such as 
 ├── CIFAR100
 │   ├── Adam
 │   │   ├── DenseNet
-│   │   │   ├── 1e4
-│   │   │   └── 1e5
+│   │   │   ├── Adaptive
+│   │   │   │   ├── Constrained filter size
+│   │   │   │   │   ├── 1e4
+│   │   │   │   │   └── 1e5
+│   │   │   │   └── Unconstrained
+│   │   │   └── Baseline
 │   │   └── ResNet164
 │   │       ├── Adaptive
 │   │       └── Baseline
@@ -48,6 +58,8 @@ The directories are organized by dataset, algorithm, and other options, such as 
 │   └── SGD
 │       ├── DenseNet
 │       │   ├── Adaptive
+│       │   │   ├── Constrained Filters
+│       │   │   └── Nonconstrained
 │       │   └── Baseline
 │       ├── ResNet162v2
 │       │   ├── Adaptive
