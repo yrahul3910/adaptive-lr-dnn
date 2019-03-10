@@ -32,6 +32,8 @@ The directories are organized by dataset, algorithm, and other options, such as 
 │   │       │   └── 1e-3
 │   │       └── Baseline
 │   ├── RMSprop
+│   │   ├── DenseNet
+│   │   │   └── Adaptive
 │   │   └── ResNet
 │   │       ├── Adaptive
 │   │       └── Baseline
@@ -61,6 +63,12 @@ The directories are organized by dataset, algorithm, and other options, such as 
 │   │   │   ├── Adaptive
 │   │   │   └── Baseline
 │   │   └── ResNet164
+│   │       ├── Adaptive
+│   │       └── Baseline
+│   ├── RMSprop
+│   │   ├── DenseNet
+│   │   │   └── Adaptive
+│   │   └── ResNet
 │   │       ├── Adaptive
 │   │       └── Baseline
 │   └── SGD
