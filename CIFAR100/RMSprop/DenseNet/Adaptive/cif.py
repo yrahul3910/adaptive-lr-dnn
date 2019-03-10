@@ -38,10 +38,10 @@ def lr_schedule(epoch):
         if norm > max_wt:
             max_wt = norm
     
-    for i in tqdm(range((len(x_train) - 1) // batch_size + 1)):
+    for i in tqdm(range((len(trainX) - 1) // batch_size + 1)):
         start_i = i * batch_size
         end_i = start_i + batch_size
-        xb = x_train[start_i:end_i]
+        xb = trainX[start_i:end_i]
     	
         tmp = np.array(func([xb]))
         activ = np.linalg.norm(tmp)
@@ -53,7 +53,7 @@ def lr_schedule(epoch):
         if activ > Kz:
             Kz = activ
 
-    S_ = (num_classes - 1) ** 2 / (num_classes * batch_size) ** 2 * S + 2e-4 * max_wt * ((num_classes - 1) * Kz) / (num_classes * batch_size)
+    S_ = (nb_classes - 1) ** 2 / (nb_classes * batch_size) ** 2 * S + 2e-4 * max_wt * ((nb_classes - 1) * Kz) / (nb_classes * batch_size)
     
     K2 = beta2 * K2 + (1 - beta2) * S_
 
