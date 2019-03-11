@@ -33,7 +33,8 @@ The directories are organized by dataset, algorithm, and other options, such as 
 │   │       └── Baseline
 │   ├── RMSprop
 │   │   ├── DenseNet
-│   │   │   └── Adaptive
+│   │   │   ├── Adaptive
+│   │   │   └── Baseline
 │   │   └── ResNet
 │   │       ├── Adaptive
 │   │       └── Baseline
@@ -67,7 +68,8 @@ The directories are organized by dataset, algorithm, and other options, such as 
 │   │       └── Baseline
 │   ├── RMSprop
 │   │   ├── DenseNet
-│   │   │   └── Adaptive
+│   │   │   ├── Adaptive
+│   │   │   └── Baseline
 │   │   └── ResNet
 │   │       ├── Adaptive
 │   │       └── Baseline
