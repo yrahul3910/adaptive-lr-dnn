@@ -1,4 +1,6 @@
-# Code for "A novel adaptive learning rate scheduler for deep neural networks"
+# Code for "A novel adaptive learning rate scheduler for deep neural networks"  
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/a-novel-adaptive-learning-rate-scheduler-for/handwritten-digit-recognition-on-mnist)](https://paperswithcode.com/sota/handwritten-digit-recognition-on-mnist?p=a-novel-adaptive-learning-rate-scheduler-for)
+
 This repository contains the code for the paper
 > Yedida, Rahul, and Snehanshu Saha. "A novel adaptive learning rate scheduler for deep neural networks." arXiv preprint arXiv:1902.07399 (2019).
 
